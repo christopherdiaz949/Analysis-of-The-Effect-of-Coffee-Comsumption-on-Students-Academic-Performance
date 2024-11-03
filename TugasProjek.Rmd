@@ -1,0 +1,321 @@
+---
+title: "IS240 Lab 12 Student Sheet"
+author: "Tan Thing Heng (Prodi Sistem Informatika UMN)"
+institute: "Prodi Sistem Informatika UMN"
+output:
+  pdf_document:
+    fig_height: 4.5
+    fig_width: 6
+    highlight: tango
+    number_sections: yes
+    toc_depth: 4
+  html_document:
+    number_sections: yes
+  word_document:
+    toc_depth: '4'
+---
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(OutDec = ",")
+library(readxl)
+```
+
+------------------------------------------------------------------------
+
+| Topik     | Statistika Nonparametrik untuk 2 Populasi            |
+|-----------|------------------------------------------------------|
+| Pertemuan | 12                                                   |
+| Nama      | Ray Anthony P, Nicholas Alven, Christopher Abie Diaz |
+| Kelas     |                                                      |
+| NIM       |                                                      |
+| Tanggal   | 2020-04                                              |
+| Waktu     | maks 100 menit                                       |
+
+------------------------------------------------------------------------
+
+## Jawaban
+
+```{r}
+#Hipotesa 1 Perbandingan Usia peminum kopi diatas umur 16 tahun-------
+library(readxl) #membaca file Excel
+library(nortest) #uji normalitas
+library(ggplot2)#grafik dgn package ggplot2
+library(dplyr)
+library(tidyr)
+library(car)
+
+data <- readxl::read_excel("kopiMahasiswa.xlsx", sheet = "mahasiswa")
+str(data)
+head(data)
+tail(data)
+View(data)
+print(data)
+table(data$`minat kopi`)
+
+data1 <- readxl::read_excel("kopiMahasiswa.xlsx", sheet = "dataSekunder1")
+str(data1)
+head(data1)
+tail(data1)
+View(data1)
+print(data1)
+
+
+#1. Usia Anda Sekarang (Format Jawaban, Contoh: 19)?
+(frekuensi<- table(data$`usia sekarang`))
+shapiro.test(data$`usia sekarang`)
+densityPlot(data$`usia sekarang`)
+summary(data$`usia sekarang`)
+sd(data$`usia sekarang`)
+
+#2 Seberapa besar minat Anda terhadap kopi?
+(frekuensi1 <- table(data$`minat kopi`))
+shapiro.test(frekuensi1)
+densityPlot(frekuensi1)
+sd(data$`minat kopi`)
+
+#3 Berapa kali Anda mengkonsumsi kopi dalam seminggu? (Format Jawaban, Contoh: 2 kali)?
+(frekuensi2 <- table(data$`kopi seminggu`))
+shapiro.test(frekuensi2)
+densityPlot(frekuensi2)
+summary(data$`kopi seminggu`)
+sd(data$`kopi seminggu`)
+
+#4 Berapa rata-rata pengeluaran anda pada setiap pembelian 1 kopi? (Format Jawaban, Contoh: 25000)?
+shapiro.test(data$`rata pengeluaran`)
+densityPlot(data$`rata pengeluaran`)
+summary(data$`rata pengeluaran`)
+sd(data$`rata pengeluaran`)
+
+
+#7 Seberapa besar pengaruh minum kopi terhadap konsentrasi Anda saat belajar atau pada waktu ujian?
+(frekuensi3 <- table(data$`konsentrasi belajar ujian`))
+shapiro.test(frekuensi3)
+densityPlot(frekuensi3)
+summary(data$`konsentrasi belajar ujian`)
+sd(data$`konsentrasi belajar ujian`)
+
+#8Pada usia berapakah Anda mulai sering mengonsumsi kopi? (Format Jawaban, Contoh: 18)
+(frekuensi4 <- table(data$`usia mengonsumsi kopi`))
+shapiro.test(frekuensi4)
+densityPlot(frekuensi4)
+summary(data$`usia mengonsumsi kopi`)
+sd(data$`usia mengonsumsi kopi`)
+#9 Apakah Anda merasa puas dengan hasil akademik Anda setelah mengomsumsi kopi?
+(frekuensi5<- table(data$`hasil akademik`))
+shapiro.test(frekuensi5)
+densityPlot(frekuensi5)
+summary(data$`hasil akademik`)
+sd(data$`hasil akademik`)
+
+
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#UJI ANOVA
+#1.Seberapa besar minat Anda terhadap kopi? dengan Berapa kali Anda mengkonsumsi kopi dalam seminggu?
+
+#Hipotesis 1
+#Hipotesis 1: Terdapat perbedaan dalam minat terhadap kopi berdasarkan jenis kelamin. (Variabel dependen: Minat terhadap kopi; Variabel independen: Jenis kelamin)
+(data$`Jenis Kelamin` <- ifelse(data$`Jenis Kelamin`=="Laki-laki",1, ifelse(data$`Jenis Kelamin`== "Perempuan",2, data$`Jenis Kelamin`)))
+data$`minat kopi`<- as.factor(data$`minat kopi`)
+anova <- aov(`Jenis Kelamin` ~ `minat kopi`, data = data)
+
+summary(anova)
+
+#hipotesis 2
+#hipotesis 2 : Terdapat perbedaan dalam pengeluaran rata-rata pada setiap pembelian kopi berdasarkan jurusan Anda. (Variabel dependen: Rata-rata pengeluaran pada setiap pembelian 1 kopi; Variabel independen: Jurusan Anda)
+
+data$`Jurusan Anda` <- ifelse(data$`Jurusan Anda` == "Sistem Informasi", 1,ifelse(data$`Jurusan Anda` == "Desain Komunikasi Visual", 2,ifelse(data$`Jurusan Anda` == "Teknik Mesin", 3,ifelse(data$`Jurusan Anda` == "Management", 4,ifelse(data$`Jurusan Anda` == "Jurnalistik", 5,ifelse(data$`Jurusan Anda` == "Film dan animasi", 6, ifelse(data$`Jurusan Anda`=="Strategic Comunication",7, ifelse(data$`Jurusan Anda`== "Teknik Informatika",8, ifelse(data$`Jurusan Anda` == "Akuntansi",9,data$`Jurusan Anda`)))))))))
+
+anova2test <- aov(`rata pengeluaran` ~ `Jurusan Anda`, data = data)
+summary(anova2test)
+
+
+```
+
+```{r message=FALSE, warning=FALSE}
+# uji pearson dan spearman
+
+# hipotesis 3
+# Hipotesis 3: Terdapat hubungan linier antara usia Anda sekarang dan frekuensi konsumsi kopi dalam seminggu. (Variabel dependen: Frekuensi konsumsi kopi dalam seminggu; Variabel independen: Usia Anda Sekarang)
+
+
+#uji menggunakan cor.test
+(data$`kopi seminggu` <- ifelse(data$`kopi seminggu`== "0",1,ifelse(data$`kopi seminggu`=="1",1,ifelse(data$`kopi seminggu`=="2",2, ifelse(data$`kopi seminggu`=="3",2, ifelse(data$`kopi seminggu`=="4",3, ifelse(data$`kopi seminggu`=="5",3,ifelse(data$`kopi seminggu`=="7",4, ifelse(data$`kopi seminggu`=="9",4, ifelse(data$`kopi seminggu`=="10",4, data$`kopi seminggu`))))))))))
+
+#Uji Shapiro test
+(frekuensiH3 <- table(data$`usia sekarang`))
+shapiro.test(frekuensiH3)
+(frekuensiH3.1 <- table(data$`kopi seminggu`))
+shapiro.test(frekuensiH3.1)
+
+
+
+result3P <- cor.test(frekuensiH3, frekuensiH3.1, method = "pearson")
+print(result3P)
+
+result3S <- cor.test(frekuensiH3,frekuensiH3.1, method = "spearman")
+print(result3S)
+
+
+
+
+
+
+#hipotesis 4
+# memberi inisial usia 0 hingga 7 merupakan 1 kemudian usia 8 hingga 11 merupakan 2, usia 12-15 merupakan 3, usia 16-17 merupakan 4, usia 18 hingga 20 merupakan 4  
+
+#uji shapiro test
+(frekuensiH4 <- table(data$`usia mengonsumsi kopi`))
+(frekuensiH4.1 <- table(data$`minat kopi`))
+
+shapiro.test(data$`usia mengonsumsi kopi`)
+shapiro.test(frekuensiH4.1)
+
+(data$`usia mengonsumsi kopi` <- ifelse(data$`usia mengonsumsi kopi`== "0",1, ifelse(data$`usia mengonsumsi kopi` == "7",1,ifelse(data$`usia mengonsumsi kopi`=="8",2,ifelse(data$`usia mengonsumsi kopi`== "10",2,ifelse(data$`usia mengonsumsi kopi`== "11",2,ifelse(data$`usia mengonsumsi kopi`=="12",3,ifelse(data$`usia mengonsumsi kopi`=="13",3, ifelse(data$`usia mengonsumsi kopi`=="14",3, ifelse(data$`usia mengonsumsi kopi`== "15",3, ifelse(data$`usia mengonsumsi kopi`=="16",4, ifelse(data$`usia mengonsumsi kopi`=="17",4,ifelse(data$`usia mengonsumsi kopi`=="18",5, ifelse(data$`usia mengonsumsi kopi`=="19",5,ifelse(data$`usia mengonsumsi kopi`=="20",5,data$`usia mengonsumsi kopi`)))))))))))))))
+
+
+
+result4P <- cor.test(frekuensiH4, frekuensiH4.1, method = "pearson")
+print(result4P)
+
+result4S <- cor.test(frekuensiH4, frekuensiH4.1, method = "spearman")
+print(result4S)
+#membuktikan bahwa data tersebut cocok menggunakan spearman
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#Wilcoxon Test
+
+#hipotesis  5: Ada perbedaan dalam minat terhadap kopi antara mereka yang merasa lebih produktif dalam belajar setelah mengonsumsi kopi dan mereka yang tidak merasa lebih produktif. (Variabel dependen: Minat terhadap kopi; Variabel independen: Merasa lebih produktif dalam belajar setelah mengonsumsi kopi)
+
+(data$`minat kopi`<- as.numeric(factor(data$`minat kopi`)))
+(data$`produktif belajar`<- ifelse(data$`produktif belajar`== "Ya",1, ifelse(data$`produktif belajar`== "Tidak",2,data$`produktif belajar`)))
+(data$`produktif belajar` <- as.numeric(factor(data$`produktif belajar`)))
+
+wilcox.test(data$`minat kopi`, data$`produktif belajar`, paired = TRUE)
+
+#Hipotesis 6: Ada perbedaan dalam minat terhadap kopi antara mereka yang rutin mengonsumsi kopi dan mereka yang tidak rutin. (Variabel dependen: Minat terhadap kopi; Variabel independen: Rutin mengonsumsi kopi)
+
+(data$`minat kopi` <- as.numeric(factor(data$`minat kopi`)))
+(data$`usia mengonsumsi kopi`<- as.numeric(factor(data$`usia mengonsumsi kopi`)))
+wilcox.test(data$`minat kopi`, data$`usia mengonsumsi kopi`,paired = TRUE)
+
+
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+
+# Uji Chi Square
+
+# hipotesis 7
+data$`Jenis Kelamin` <- ifelse(data$`Jenis Kelamin`== "Laki-laki",1, ifelse(data$`Jenis Kelamin` == "Perempuan",2,data$`Jenis Kelamin`))
+ujiCs7 <- table(data$`minat kopi`, data$`Jenis Kelamin`)
+
+result7 <- chisq.test(ujiCs7)
+print(result7)
+
+
+# hipotesis 8
+Ujics8 <- table(data$`minat kopi`, data$`hasil akademik`)
+
+result8 <- chisq.test(Ujics8)
+print(result8)
+
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#Hipotesis 1 data sekunder jenis kelamin dengan minum kopi
+#(data1$`jenis kelamin` <- ifelse(data1$`jenis kelamin`=="laki-laki",27, ifelse##(data1$`jenis kelamin`== "perempuan",38,data1$`jenis kelamin`)))
+data1$`jenis kelamin` <- ifelse(data1$`jenis kelamin` == "laki-laki", 27, ifelse(data1$`jenis kelamin` == "perempuan", 38, data1$`jenis kelamin`))
+
+
+data1$`jenis kelamin`
+
+(data1$`minum kopi`<- ifelse(data1$`minum kopi`=="tidak konsumsi rutin",data1$frekuensi...4,ifelse(data1$`minum kopi`=="konsumsi ringan",data1$frekuensi...4,data1$`minum kopi`)))
+
+#uji chi-square
+(data1$`jenis kelamin`<- as.factor(data1$`jenis kelamin`))
+(data1$`minum kopi`<- as.factor(data1$`minum kopi`))
+ujiCsS1 <- table(data1$`jenis kelamin`, data1$`minum kopi`)
+
+
+result7S1 <- chisq.test(ujiCsS1)
+print(result7S1)
+
+#hipotesis 1 data sekunder 2 konsumsi kopi terhadap usia
+
+data2 <- readxl::read_excel("kopiMahasiswa.xlsx",sheet = "dataSekunder2")
+
+#uji Chi Square
+#Memanggil dan mengubah data terlebih dahulu
+(data2$`konsumsi kopi`<- ifelse(data2$`konsumsi kopi`=="tidak konsumsi", data2$frekuensi...2, ifelse(data2$`konsumsi kopi`=="ringan",data2$frekuensi...2,ifelse(data2$`konsumsi kopi`=="berat",data2$frekuensi...2,data2$`konsumsi kopi`))))
+
+(data2$usia <- ifelse(data2$usia == "18-20", data2$frekuensi...4, ifelse(data2$usia=="21-22",data2$frekuensi...4,ifelse(data2$usia=="23-24",data2$frekuensi...4,data2$usia))))
+
+(data2$`konsentrasi belajar` <- ifelse(data2$`konsentrasi belajar`=="baik",data2$frekuensi...6,ifelse(data2$`konsentrasi belajar`=="cukup",data2$frekuensi...6,ifelse(data2$`konsentrasi belajar`=="kurang",data2$frekuensi...6,data2$`konsentrasi belajar`))))
+
+data2$`konsumsi kopi` <- as.factor(data2$`konsumsi kopi`)
+data2$usia <- as.factor(data2$usia)
+data2$`konsentrasi belajar`<-as.factor(data2$`konsentrasi belajar`)
+
+#UJI DISINI
+ujiCsS2 <- table(data2$`konsumsi kopi`, data2$usia)
+result7S2 <- chisq.test(ujiCsS2)
+print(result7S2)
+
+#hipotesis 2 data sekunder 2 konsumsi kopi terhadap konsetrasi belajar
+
+ujiCSS2.1 <- table(data2$`konsumsi kopi`, data2$`konsentrasi belajar`)
+resultt7S2.1 <- chisq.test(ujiCSS2.1)
+print(resultt7S2.1)
+
+
+```
+
+```{r message=FALSE, warning=FALSE}
+#Hipotesa 7 umur responden mulai sering menikmati kopi >= 2017
+
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+#uji pearson data sekunder 2 
+# hipotesis 3 data sekunder 2 konsumsi kopi terhadap usia
+(data2$`konsumsi kopi`<- ifelse(data2$`konsumsi kopi`=="tidak konsumsi", data2$frekuensi...2, ifelse(data2$`konsumsi kopi`=="ringan",data2$frekuensi...2,ifelse(data2$`konsumsi kopi`=="berat",data2$frekuensi...2,data2$`konsumsi kopi`))))
+
+(data2$usia <- ifelse(data2$usia == "18-20", data2$frekuensi...4, ifelse(data2$usia=="21-22",data2$frekuensi...4,ifelse(data2$usia=="23-24",data2$frekuensi...4,data2$usia))))
+
+data2$`konsumsi kopi`<-as.numeric(factor(data2$`konsumsi kopi`))
+data2$usia <- as.numeric(factor(data2$usia))
+result2S <- cor.test(data2$`konsumsi kopi`, data2$usia, method = "pearson")
+print(result2S)
+
+# uji Wilcoxon Test
+# hipotesis 4 data sekunder 2 konsumsi kopi terhadap usia
+wilcox.test(data2$`konsumsi kopi`, data2$usia,paired = TRUE)
+
+#uji pearson data sekunder ke dua
+#uji hipotesis 5 data sekunder 2 konsumsi kopi terhadap konsentrasi belajar
+data2$`konsumsi kopi`<-as.numeric(factor(data2$`konsumsi kopi`))
+data2$`konsentrasi belajar`<-as.numeric(factor(data2$`konsentrasi belajar`))
+result2S.1 <- cor.test(data2$`konsumsi kopi`, data2$`konsentrasi belajar`, method = "pearson")
+result2S.1 <- cor.test(data2$`konsumsi kopi`, data2$`konsentrasi belajar`, method = "spearman")
+print(result2S.1)
+
+#Uji Wilcoxon
+# uji hipotesis 6 data sekunder 2 konsumsi kopi terhadap konsentrasi belajar
+wilcox.test(data2$`konsumsi kopi`, data2$`konsentrasi belajar`, paired = TRUE)
+
+
+```
